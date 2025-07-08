@@ -9,3 +9,5 @@ def get_activation(name):
             return nn.Sigmoid()
         case "spline":
             return OptimizedSigmoidSpline()
+        case _:
+            raise ValueError(f"Activation '{name}' is not implemented")
