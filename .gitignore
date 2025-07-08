@@ -1,2 +1,6 @@
 venv/
 data/tiny_imagenet-200/
+data/cifar10/
+data/FashionMNIST/
+__pycache__/
+logs/
