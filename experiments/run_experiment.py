@@ -15,7 +15,7 @@ sys.path.append(str(project_root))
 
 from models.feedforward import FNN
 from models.activations import get_activation
-from training.trainer import train
+from training.trainer import train, create_csv_logger
 from training.utils import set_seed, get_dataloaders
 
 import os
@@ -37,6 +37,7 @@ def main():
     
     # Dataset & Input Dimension
     train_loader, input_dim, output_dim = get_dataloaders(config["dataset"], config["batch_size"])
+    val_loader, _, _ = get_dataloaders(config["dataset"], config["batch_size"], split="val")
     
     # Modell & Aktivierung
     activation_fn = get_activation(config["activation"])
@@ -52,6 +53,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
     writer = SummaryWriter(log_dir=config["log_dir"])
+    csv_path = create_csv_logger(config["log_dir"])
 
     start_time = time.time()
 
@@ -63,7 +65,9 @@ def main():
         optimizer=optimizer,
         epochs=config["epochs"],
         device=device,
-        writer=writer
+        writer=writer,
+        val_loader=val_loader,
+        csv_path=csv_path
     )
     
     duration = time.time() - start_time

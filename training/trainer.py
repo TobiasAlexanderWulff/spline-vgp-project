@@ -1,6 +1,22 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+import csv
+import os
+import time
+
+def create_csv_logger(log_dir, filename="metrics.csv"):
+    os.makedirs(log_dir, exist_ok=True)
+    filepath = os.path.join(log_dir, filename)
+    
+    # Header schreiben (falls die Datei neu ist)
+    if not os.path.exists(filepath):
+        with open(filepath, mode="w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["epoch", "train_loss", "train_accuracy", "val_loss", "val_accuracy", "timestamp"])
+    
+    return filepath
+
 def evaluate(model,dataloader, criterion, device):
     model.eval()
     total_loss, correct = 0.0, 0
@@ -19,7 +35,7 @@ def evaluate(model,dataloader, criterion, device):
     accuracy = correct / len(dataloader.dataset)
     return avg_loss, accuracy
 
-def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_loader=None):
+def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_loader=None, csv_path=None):
     model.to(device)
     for epoch in range(epochs):
         model.train()
@@ -59,3 +75,14 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
             log_str += f" | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}"
 
         print(log_str)
+        
+        with open (csv_path, mode="a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                epoch + 1,
+                avg_loss,
+                accuracy,
+                val_loss if val_loader else "",
+                val_acc if val_loader else "",
+                time.strftime("%Y-%m-%d %H:%M:%S")
+            ])
