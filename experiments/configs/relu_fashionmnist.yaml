@@ -1,0 +1,10 @@
+experiment_name: relu_fashionmnist
+dataset: fashionmnist
+activation: relu
+epochs: 50
+batch_size: 128
+learning_rate: 0.001
+hidden_dim: 512
+depth: 8
+seed: 42
+log_dir: logs/tensorboard/relu_fashionmnist
