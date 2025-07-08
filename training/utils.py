@@ -17,7 +17,7 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def get_dataloaders(name, batch_size):
+def get_dataloaders(name, batch_size, split="train"):
     """Lädt Trainingsdaten und setzt input_dim + output_dim."""
 
     match(name.lower()):
@@ -29,7 +29,7 @@ def get_dataloaders(name, batch_size):
                 transforms.Lambda(lambda x: (x - x.mean()) / x.std())   # z-Score pro Bild
             ])
             dataset = torchvision.datasets.FashionMNIST(
-                root="./data", train=True, download=True, transform=transform)
+                root="./data", train=(split=="train"), download=True, transform=transform)
 
         case "cifar10":
             input_dim = 3 * 32 * 32
@@ -40,7 +40,7 @@ def get_dataloaders(name, batch_size):
                                      std=[0.2023, 0.1994, 0.2010])
             ])
             dataset = torchvision.datasets.CIFAR10(
-                root="./data", train=True, download=True, transform=transform)
+                root="./data/cifar10", train=(split=="train"), download=True, transform=transform)
 
         case "tiny_imagenet":
             input_dim = 3 * 64 * 64
@@ -51,7 +51,8 @@ def get_dataloaders(name, batch_size):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
             ])
-            dataset = ImageFolder(root="./data/tiny-imagenet-200/train", transform=transform)
+            subfolder = "train" if split == "train" else "val"
+            dataset = ImageFolder(root=f"./data/tiny-imagenet-200/{subfolder}", transform=transform)
 
         case _:
             raise ValueError(f"Unbekannter Datensatz: {name}")
