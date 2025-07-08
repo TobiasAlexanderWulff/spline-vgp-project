@@ -1,7 +1,7 @@
 # experiments/configs/spline.yaml
 
 experiment_name: spline_fashionmnist
-dataset: fashionmnist  # oder cifar10 / imagenet_small
+dataset: fashionmnist  # oder cifar10 / tiny_imagenet
 activation: spline
 epochs: 50
 batch_size: 128
