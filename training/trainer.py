@@ -12,8 +12,8 @@ def create_csv_logger(log_dir, filename="metrics.csv"):
     # Header schreiben (falls die Datei neu ist)
     if not os.path.exists(filepath):
         with open(filepath, mode="w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["epoch", "train_loss", "train_accuracy", "val_loss", "val_accuracy", "timestamp"])
+            csv_writer = csv.writer(f)
+            csv_writer.writerow(["epoch", "train_loss", "train_accuracy", "val_loss", "val_accuracy", "timestamp"])
     
     return filepath
 
@@ -77,8 +77,8 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
         print(log_str)
         
         with open (csv_path, mode="a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([
+            csv_writer = csv.writer(f)
+            csv_writer.writerow([
                 epoch + 1,
                 avg_loss,
                 accuracy,
