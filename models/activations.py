@@ -1,5 +1,5 @@
 import torch.nn as nn
-from sigmoid_spline_activation import OptimizedSigmoidSpline
+from models.sigmoid_spline_activation import OptimizedSigmoidSpline
 
 def get_activation(name):
     match(name):
