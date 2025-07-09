@@ -4,7 +4,9 @@ from torch.utils.tensorboard import SummaryWriter
 import csv
 import os
 import time
+import sys
 from tqdm import tqdm
+
 
 def create_csv_logger(log_dir, filename="metrics.csv"):
     os.makedirs(log_dir, exist_ok=True)
@@ -17,6 +19,7 @@ def create_csv_logger(log_dir, filename="metrics.csv"):
             csv_writer.writerow(["epoch", "train_loss", "train_accuracy", "val_loss", "val_accuracy", "timestamp"])
     
     return filepath
+
 
 def evaluate(model,dataloader, criterion, device):
     model.eval()
@@ -36,13 +39,18 @@ def evaluate(model,dataloader, criterion, device):
     accuracy = correct / len(dataloader.dataset)
     return avg_loss, accuracy
 
+
 def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_loader=None, csv_path=None):
     start_time = time.time()
     model.to(device)
     for epoch in range(epochs):
         model.train()
         total_loss, correct = 0.0, 0
-        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False)
+        try:
+            real_terminal = open(os.ttyname(1), 'w')  # stdout = FD 1
+        except:
+            real_terminal = sys.stderr
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False, file=real_terminal)
         for images, labels in progress_bar:
             images, labels = images.to(device), labels.to(device)
             images = images.view(images.size(0), -1)
@@ -84,7 +92,7 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
         minutes, seconds = divmod(rem, 60)
         time_str = f"[{hours:02}:{minutes:02}:{seconds:02}]"
         
-        print(f"{time_str} {log_str}")
+        print(f"{time_str} {log_str}", flush=True)
         
         with open (csv_path, mode="a", newline="") as f:
             csv_writer = csv.writer(f)

@@ -21,7 +21,7 @@ def plot_metrics(csv_path, save_dir=None):
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         plt.savefig(Path(save_dir) / f"{experiment_name}_loss.png", dpi=300)
-    plt.show()
+    #plt.show()
     
     # Accuracy
     plt.figure(figsize=(8, 5))
@@ -35,7 +35,7 @@ def plot_metrics(csv_path, save_dir=None):
     plt.legend()
     if save_dir:
         plt.savefig(Path(save_dir) / f"{experiment_name}_accuracy.png", dpi=300)
-    plt.show()
+    #plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

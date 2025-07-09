@@ -43,7 +43,7 @@ def plot_gradients(gradient_curves, experiment_name, save_dir=None):
         save_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(save_path, dpi=300)
         print(f"[SUCCESS] Plot gespeichert unter: {save_path}")
-    plt.show()
+    #plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
