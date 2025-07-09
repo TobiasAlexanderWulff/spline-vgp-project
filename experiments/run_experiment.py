@@ -1,5 +1,3 @@
-# experiment/run_experiment.py
-
 import sys
 from pathlib import Path
 import argparse
@@ -34,6 +32,8 @@ def main():
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}")
+    
+    print(f"[INFO] Starte Experiment: {config['experiment_name']}")
     
     # Dataset & Input Dimension
     train_loader, input_dim, output_dim = get_dataloaders(config["dataset"], config["batch_size"])
@@ -79,6 +79,48 @@ def main():
         f.write(f"{duration:.2f} seconds\n")
     
     writer.close()
+    
+    # Zusammenfassung laden
+    final_epoch = config["epochs"]
+    summary = {
+        "experiment": config["experiment_name"],
+        "duration": duration,
+        "epoch": final_epoch,
+        "train_loss": None,
+        "train_acc": None,
+        "val_loss": None,
+        "val_acc": None,
+    }
+    
+    # Werte aus CSV holen
+    csv_path = Path(config["log_dir"]) / "metrics.csv"
+    if csv_path.exists():
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        if len(df) > 0:
+            last_row = df.iloc[-1]
+            summary["train_loss"] = last_row["train_loss"]
+            summary["train_acc"] = last_row["train_accuracy"]
+            summary["val_loss"] = last_row.get("val_loss", None)
+            summary["val_acc"] = last_row.get("val_accuracy", None)
+
+    # Zeit formatieren
+    duration_min = int(duration // 60)
+    duration_sec = int(duration % 60)
+    duration_str = f"{duration_min:02}:{duration_sec:02}"
+    
+    # Konsolen Output
+    print("\n📋 Training Summary (" + summary["experiment"] + ")")
+    print("─" * 46)
+    print(f"Total Time      : {duration_str}")
+    print(f"Final Epoch     : {summary['epoch']}")
+    print(f"Train Loss      : {summary['train_loss']:.4f}")
+    print(f"Train Accuracy  : {summary['train_acc']:.4f}")
+    if summary["val_loss"] is not None and not pd.isna(summary["val_loss"]):
+        print(f"Val Loss        : {summary['val_loss']:.4f}")
+        print(f"Val Accuracy    : {summary['val_acc']:.4f}")
+    print("─" * 46)
+    
 
 if __name__ == "__main__":
     main()
