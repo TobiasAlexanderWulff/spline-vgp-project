@@ -3,7 +3,7 @@ dataset: tiny_imagenet
 activation: sigmoid
 epochs: 50
 batch_size: 128
-learning_rate: 0.001
+learning_rate: 0.0003
 hidden_dim: 512
 depth: 8
 seed: 42
