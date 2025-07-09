@@ -60,6 +60,8 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
             loss = criterion(outputs, labels)
             progress_bar.set_postfix(loss=loss.item())
             loss.backward()
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10)
+            writer.add_scalar("gradient/clipped_norm", grad_norm, epoch)
             
             # Gradienten loggen
             for name, param in model.named_parameters():
