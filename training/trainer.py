@@ -4,6 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 import csv
 import os
 import time
+from tqdm import tqdm
 
 def create_csv_logger(log_dir, filename="metrics.csv"):
     os.makedirs(log_dir, exist_ok=True)
@@ -36,23 +37,27 @@ def evaluate(model,dataloader, criterion, device):
     return avg_loss, accuracy
 
 def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_loader=None, csv_path=None):
+    start_time = time.time()
     model.to(device)
     for epoch in range(epochs):
         model.train()
         total_loss, correct = 0.0, 0
-        for images, labels in dataloader:
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False)
+        for images, labels in progress_bar:
             images, labels = images.to(device), labels.to(device)
             images = images.view(images.size(0), -1)
             
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
+            progress_bar.set_postfix(loss=loss.item())
             loss.backward()
             
             # Gradienten loggen
             for name, param in model.named_parameters():
-                if param.name is not None:
-                    writer.add_histogram(f"gradients/{name}", param.grad, epoch)
+                if param.grad is not None:
+                    grad_mean = param.grad.abs().mean()
+                    writer.add_scalar(f"grad_mean/{name}", grad_mean, epoch)
             
             optimizer.step()
             
@@ -74,7 +79,12 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
             writer.add_scalar("Accuracy/val", val_acc, epoch)
             log_str += f" | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}"
 
-        print(log_str)
+        elapsed = int(time.time() - start_time)
+        hours, rem = divmod(elapsed, 3600)
+        minutes, seconds = divmod(rem, 60)
+        time_str = f"[{hours:02}:{minutes:02}:{seconds:02}]"
+        
+        print(f"{time_str} {log_str}")
         
         with open (csv_path, mode="a", newline="") as f:
             csv_writer = csv.writer(f)
