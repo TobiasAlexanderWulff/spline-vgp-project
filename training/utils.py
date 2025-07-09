@@ -52,7 +52,7 @@ def get_dataloaders(name, batch_size, split="train"):
                                      std=[0.229, 0.224, 0.225])
             ])
             subfolder = "train" if split == "train" else "val"
-            dataset = ImageFolder(root=f"./data/tiny-imagenet-200/{subfolder}", transform=transform)
+            dataset = ImageFolder(root=f"./data/tiny_imagenet-200/{subfolder}", transform=transform)
 
         case _:
             raise ValueError(f"Unbekannter Datensatz: {name}")
