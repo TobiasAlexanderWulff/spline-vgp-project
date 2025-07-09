@@ -14,9 +14,8 @@ sys.path.append(str(project_root))
 from models.feedforward import FNN
 from models.activations import get_activation
 from training.trainer import train, create_csv_logger
-from training.utils import set_seed, get_dataloaders
+from training.utils import initialize_weights, set_seed, get_dataloaders
 
-import os
 
 def load_config(config_path):
     with open(config_path, "r") as f:
@@ -48,6 +47,8 @@ def main():
         activation_fn=activation_fn,
         output_dim=output_dim,
     )
+    
+    initialize_weights(model, config["activation"])
     
     # Loss, Optimizer, Writer
     criterion = nn.CrossEntropyLoss()

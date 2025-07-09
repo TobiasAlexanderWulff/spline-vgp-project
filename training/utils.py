@@ -1,11 +1,24 @@
-# training/utils.py
-
 import torch
+import torch.nn.init as init
+import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
+from models.activations import OptimizedSigmoidSpline
 import numpy as np
 import random
+
+
+def initialize_weights(model, activation_name):
+    for module in model.modules():
+        if isinstance(module, nn.Linear):
+            if activation_name in ("sigmoid", "spline"):
+                init.xavier_uniform_(module.weight)
+            else:
+                init.kaiming_uniform_(module.weight, nonlinearity="relu")
+            if module.bias is not None:
+                init.zeros_(module.bias)
+
 
 def set_seed(seed):
     """Setzt alle relevanten Zufallsgeneratoren auf einen festen Seed."""
