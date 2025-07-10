@@ -67,7 +67,10 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
             for name, param in model.named_parameters():
                 if param.grad is not None:
                     grad_mean = param.grad.abs().mean()
+                    grad_norm = param.grad.norm()
                     writer.add_scalar(f"grad_mean/{name}", grad_mean, epoch)
+                    writer.add_scalar(f"gradients/norm_{name}", grad_norm, epoch)
+
             
             optimizer.step()
             
