@@ -59,24 +59,17 @@ def main():
     
     for config_path in config_files:
         experiment_name = config_path.stem
-        log_dir = Path(f"logs/tensorboard/{experiment_name}")
-        csv_path = log_dir / "metrics.csv"
         
         success = run_experiment(config_path)
         if not success:
             continue
         
-        if (csv_path.exists()):
-            print(f"📊 Plotting Metriken für {experiment_name}")
-            plot_metrics(csv_path)
-        else:
-            print(f"⚠️ Keine metrics.csv für {experiment_name} gefunden.")
-        
-        if log_dir.exists():
-            print(f"📈 Plotting Gradienten für {experiment_name}")
-            plot_gradients(log_dir)
-        else:
-            print(f"⚠️ Kein TensorBoard-Log für {experiment_name} gefunden.")
+        print(f"📊 Generiere alle Plots für {experiment_name}")
+        subprocess.run([
+            "python", "results/plots/plot_all.py",
+            "--name", experiment_name,
+            "--save_dir", "results/plots/"
+        ])
 
     print("\n✅ Alle Experimente abgeschlossen – erstelle Zusammenfassungstabelle ...")
     subprocess.run(["python", "summarize_results.py"], check=True)

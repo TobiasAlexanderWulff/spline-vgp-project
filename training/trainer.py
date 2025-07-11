@@ -41,6 +41,8 @@ def evaluate(model,dataloader, criterion, device):
 
 
 def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_loader=None, csv_path=None):
+    gradient_log = []
+    log_dir = os.path.dirname(csv_path) if csv_path else "./logs"
     start_time = time.time()
     model.to(device)
     for epoch in range(epochs):
@@ -70,7 +72,11 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
                     grad_norm = param.grad.norm()
                     writer.add_scalar(f"grad_mean/{name}", grad_mean, epoch)
                     writer.add_scalar(f"gradients/norm_{name}", grad_norm, epoch)
-
+                    gradient_log.append({
+                        "epoch": epoch,
+                        "parameter": name,
+                        "mean_abs_gradient": grad_mean.item()
+                    })
             
             optimizer.step()
             
@@ -109,3 +115,9 @@ def train(model, dataloader, criterion, optimizer, epochs, device, writer, val_l
                 val_acc if val_loader else "",
                 time.strftime("%Y-%m-%d %H:%M:%S")
             ])
+
+    gradient_csv_path = os.path.join(log_dir, "gradients.csv")
+    with open(gradient_csv_path, mode="w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["epoch", "parameter", "mean_abs_gradient"])
+        writer.writeheader()
+        writer.writerows(gradient_log)
