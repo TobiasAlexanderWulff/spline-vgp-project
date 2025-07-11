@@ -1,4 +1,6 @@
 import sys
+import shutil
+import os
 from pathlib import Path
 import argparse
 import yaml
@@ -17,9 +19,16 @@ from training.trainer import train, create_csv_logger
 from training.utils import initialize_weights, set_seed, get_dataloaders
 
 
+def clear_log_dir(log_dir):
+    if os.path.exists(log_dir):
+        shutil.rmtree(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
+
+
 def load_config(config_path):
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -53,6 +62,7 @@ def main():
     # Loss, Optimizer, Writer
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
+    clear_log_dir(config["log_dir"])
     writer = SummaryWriter(log_dir=config["log_dir"])
     csv_path = create_csv_logger(config["log_dir"])
 

@@ -11,7 +11,6 @@ EXPERIMENT_TIMEOUT = 2 * 60 * 60    # 2 Stunden
 
 
 def run_experiment(config_path):
-    return True
     experiment_name = config_path.stem
     log_file = LOG_DIR / f"{experiment_name}.log"
     print(f"\n🔁 Starte Experiment: {experiment_name} → logge nach {log_file}")

@@ -1,6 +1,4 @@
 import torch
-from torch.utils.tensorboard import SummaryWriter
-
 import csv
 import os
 import time
