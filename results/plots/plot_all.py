@@ -59,11 +59,11 @@ def plot_heatmap(csv_path, save_dir=None, clip_min=1e-6, clip_max=1e0):
 
     sns.heatmap(
         data_w,
-        cmap="viridis",
+        cmap="PiYG",
         vmin=-6, vmax=-1,
         cbar=False,
         ax=ax_w,
-        xticklabels=pivot_w.columns,
+        xticklabels=pivot_w.columns+1,
         yticklabels=labels_w,
     )
     ax_w.set_title(f"{title} — Weight Gradients")
@@ -76,11 +76,11 @@ def plot_heatmap(csv_path, save_dir=None, clip_min=1e-6, clip_max=1e0):
 
     sns.heatmap(
         data_b,
-        cmap="viridis",
+        cmap="PiYG",
         vmin=-6, vmax=-1,
         cbar_kws={"label": "mean |Gradient|"},
         ax=ax_b,
-        xticklabels=pivot_b.columns,
+        xticklabels=pivot_b.columns+1,
         yticklabels=labels_b,
     )
     ax_b.set_title(f"{title} — Bias Gradients")
