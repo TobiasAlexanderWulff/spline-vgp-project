@@ -4,9 +4,47 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
+from torchvision.datasets.folder import default_loader
+from torch.utils.data import Dataset
 from models.activations import OptimizedSigmoidSpline
 import numpy as np
 import random
+import os
+
+
+class TinyImageNetValDataset(Dataset):
+    def __init__(self, root, transform=None):
+        self.transform = transform
+        self.loader = default_loader
+        val_dir = os.path.join(root, "images")
+        annotations_path = os.path.join(root, "val_annotations.txt")
+        
+        # Load annotations
+        with open(annotations_path, "r") as f:
+            lines = f.readlines()
+        
+        self.img_to_class = {}
+        classes = sorted({line.split()[1] for line in lines})
+        self.class_to_idx = {cls_name: idx for idx, cls_name in enumerate(classes)}
+        
+        for line in lines:
+            img_name, cls_name = line.split()[:2]
+            self.img_to_class[img_name] = self.class_to_idx[cls_name]
+        
+        self.img_paths = [os.path.join(val_dir, img_name) for img_name in self.img_to_class.keys()]
+    
+    def __len__(self):
+        return len(self.img_paths)
+    
+    def __getitem__(self, index):
+        path = self.img_paths[index]
+        target = self.img_to_class[os.path.basename(path)]
+        img = self.loader(path)
+        
+        if self.transform:
+            img = self.transform(img)
+        
+        return img, target
 
 
 def initialize_weights(model, activation_name):
@@ -64,8 +102,10 @@ def get_dataloaders(name, batch_size, split="train"):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
             ])
-            subfolder = "train" if split == "train" else "val"
-            dataset = ImageFolder(root=f"./data/tiny_imagenet-200/{subfolder}", transform=transform)
+            if split == "train":
+                dataset = ImageFolder(root=f"./data/tiny_imagenet-200/train", transform=transform)
+            else:
+                dataset = TinyImageNetValDataset(root=f"./data/tiny_imagenet-200/val", transform=transform)
 
         case _:
             raise ValueError(f"Unbekannter Datensatz: {name}")
