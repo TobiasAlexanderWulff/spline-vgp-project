@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 import seaborn as sns
@@ -195,9 +196,15 @@ def plot_gradients(gradient_data, experiment_name, save_dir, outlier_threshold=1
         ax.set_yscale("log")
         ax.set_ylabel(f"{key.capitalize()} Gradients")
         ax.grid(True)
-        if ax.has_data():
-            ax.legend(fontsize=8, ncol=2)
     ax2.set_xlabel("Epoch")
+    
+    legend_handles = [
+        mpatches.Patch(color=plt.get_cmap("tab10")(0), label="Early Layers"),
+        mpatches.Patch(color=plt.get_cmap("tab10")(2), label="Mid Layers"),
+        mpatches.Patch(color=plt.get_cmap("tab10")(4), label="Late Layers"),
+    ]
+    ax.legend(handles=legend_handles, fontsize=10)
+    
     plt.tight_layout()
     out_path = Path(save_dir) / f"{experiment_name}_scalar_gradients.png"
     plt.savefig(out_path, dpi=300)
