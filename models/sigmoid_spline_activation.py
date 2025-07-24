@@ -6,13 +6,10 @@ from torch.autograd import grad
 import matplotlib.pyplot as plt
 
 
-# TODO vergleich zwischen Spline- und Non-Spline-Variante? 
-# TODO spline-variante als C++ implementierung für fairen vergleich
-
 class OptimizedSigmoidSpline(nn.Module):
     """Optimized Sigmoid Spline Class"""
     
-    def __init__(self, n=2, x_limit=2):        
+    def __init__(self, n: int=2, x_limit: int=2):        
         super(OptimizedSigmoidSpline, self).__init__()
 
         self.n = n
@@ -34,9 +31,9 @@ class OptimizedSigmoidSpline(nn.Module):
         self._ys = self._solve_linear_system()
 
 
-    def _solve_linear_system(self):
+    def _solve_linear_system(self) -> torch.Tensor:
         """
-        Solve the linear system to find the coefficients of the spline.
+        Solves the linear system to find the coefficients of the spline.
         The system is derived from the Hermite interpolation conditions.
         """
         
@@ -69,9 +66,9 @@ class OptimizedSigmoidSpline(nn.Module):
         return torch.cat([torch.tensor([self._y0s]), c, torch.tensor([self._yns])])
 
 
-    def forward(self, t):
+    def forward(self, t: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass of the spline function.
+        Forwards pass of the spline function.
         Args:
             t (torch.Tensor): Input tensor.
         Returns:
@@ -88,9 +85,9 @@ class OptimizedSigmoidSpline(nn.Module):
         )
     
     
-    def _spline(self, t):
+    def _spline(self, t: torch.Tensor) -> torch.Tensor:
         """
-        Compute the spline value for t using the precomputed coefficients.
+        Computes the spline value for t using the precomputed coefficients.
         
         Args:
             t (torch.Tensor): Input tensor.
@@ -109,9 +106,9 @@ class OptimizedSigmoidSpline(nn.Module):
         return s
     
     
-    def _reparametrize(self, t, i):
+    def _reparametrize(self, t: torch.Tensor, i: int) -> torch.Tensor:
         """
-        Reparametrize the input tensor t to the range of the spline segment.
+        Reparametrizes the input tensor t to the range of the spline segment.
         
         Args:
             t (torch.Tensor): Input tensor.
@@ -123,9 +120,9 @@ class OptimizedSigmoidSpline(nn.Module):
         return (t - self.sig_x[i]) / (self.sig_x[i+1] - self.sig_x[i])
     
     
-    def _hermite(self, t, y0, y1, y0s, y1s):
+    def _hermite(self, t: torch.Tensor, y0: float, y1: float, y0s: float, y1s: float) -> torch.Tensor:
         """
-        Compute the Hermite polynomial for the given parameters.
+        Computes the Hermite polynomial for the given parameters.
         
         Args:
             t (torch.Tensor): Input tensor.
@@ -144,9 +141,9 @@ class OptimizedSigmoidSpline(nn.Module):
         return term1 + term2 + term3 + term4
     
     
-    def plot(self, t):
+    def plot(self, t: torch.Tensor):
         """
-        Plot the spline function, the original sigmoid function, and the control points.
+        Plots the spline function, the original sigmoid function, and the control points.
         Also plots the derivatives accordingly.
         The plot is generated using matplotlib.
         
@@ -185,11 +182,11 @@ class OptimizedSigmoidSpline(nn.Module):
         plt.show()
     
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"OptimizedSigmoidSpline(n={self.n}, x_limit={self.x_limit})"
     
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f"OptimizedSigmoidSpline(n={self.n}, x_limit={self.x_limit})"
 
 

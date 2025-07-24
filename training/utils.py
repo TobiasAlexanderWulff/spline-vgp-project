@@ -6,13 +6,16 @@ import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 from torchvision.datasets.folder import default_loader
 from torch.utils.data import Dataset
-from models.activations import OptimizedSigmoidSpline
 import numpy as np
 import random
 import os
 
 
 class TinyImageNetValDataset(Dataset):
+    """
+    Custom Dataset implemenation for the TinyImageNet Valdiation Data.
+    This was needed because validation data is differently structured as the training data for the TinyImageNet dataset and because of this the dataloader couldnt load the valiation data.
+    """
     def __init__(self, root, transform=None):
         self.transform = transform
         self.loader = default_loader
@@ -33,7 +36,7 @@ class TinyImageNetValDataset(Dataset):
         
         self.img_paths = [os.path.join(val_dir, img_name) for img_name in self.img_to_class.keys()]
     
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.img_paths)
     
     def __getitem__(self, index):
@@ -47,7 +50,11 @@ class TinyImageNetValDataset(Dataset):
         return img, target
 
 
-def initialize_weights(model, activation_name):
+def initialize_weights(model: nn.Module, activation_name: str):
+    """
+    Initializes the weights for a model with respect to the activation function.
+    Uses xavier for sigmoid and the custom spline activation and kaiming for ReLU.
+    """
     for module in model.modules():
         if isinstance(module, nn.Linear):
             if activation_name in ("sigmoid", "spline"):
@@ -58,8 +65,8 @@ def initialize_weights(model, activation_name):
                 init.zeros_(module.bias)
 
 
-def set_seed(seed):
-    """Setzt alle relevanten Zufallsgeneratoren auf einen festen Seed."""
+def set_seed(seed: int):
+    """Sets all relevant randomgenerators to use a consistant seed."""
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
@@ -68,9 +75,8 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def get_dataloaders(name, batch_size, split="train"):
-    """Lädt Trainingsdaten und setzt input_dim + output_dim."""
-
+def get_dataloaders(name: str, batch_size: int, split: str="train"):
+    """Loads trainingdata and determs input_dim + output_dim."""
     match(name.lower()):
         case "fashionmnist":
             input_dim = 28 * 28

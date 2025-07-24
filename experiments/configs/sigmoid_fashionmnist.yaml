@@ -7,4 +7,4 @@ learning_rate: 0.0003
 hidden_dim: 512
 depth: 8
 seed: 42
-log_dir: logs/tensorboard/sigmoid_fashionmnist
+log_dir: logs/sigmoid_fashionmnist

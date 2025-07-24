@@ -20,34 +20,31 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 
 ---
 
+### TinyImageNet Download
+
+:)
+
+---
+
 ## 🚀 Einzelnes Experiment starten
 
 ``` sh
 python experiments/run_experiment.py --config experiments/configs/spline_cifar10.yaml
 ```
-- Logs: `logs/tensorboard/<experiment_name>/`
+- Logs: `logs/<experiment_name>/`
 - Metriken: `metrics.csv`
-- Dauer: `training_duration.txt`
+- Trainings Log: `training.log`
 
 ---
 
-### 📊 Metriken plotten
+## 📊 Alle vorhandenen csv-Logs plotten
 
 ``` sh
-python results/plots/plot_metrics.py \
-  --csv logs/tensorboard/spline_cifar10/metrics.csv \
-  --save_dir results/plots/
+python results/plots/plot_all.py
 ```
-
----
-
-### 📈 Gradientenverlauf (Skalare)
-
-```bash
-python results/plots/plot_scalar_gradients.py \
-  --log_dir logs/tensorboard/spline_cifar10 \
-  --save_dir results/plots/
-```
+- Durchsucht alle vorhandenen log-Unterverzeichnisse nach `metrics.csv` Dateien
+- Plottet Gradient Heatmaps, sowie Loss und Accuracies entsprechend
+- Plots werden unter `results/plots/gradient_heatmaps/` und `results/plots/loss_acc/` entsprechend gespeichert
 
 ---
 
@@ -57,7 +54,7 @@ python results/plots/plot_scalar_gradients.py \
 python run_all_experiments.py
 ```
 - Läuft alle `.yaml` in `experiments/configs/` durch
-- Führt Training, CSV-Logging und Plotting durch
+- Führt Training, CSV-Logging und Plotting entsprechend durch
 
 ---
 
@@ -70,14 +67,18 @@ spline-vgp-project/
 │   ├── configs/            # YAML-Experimente
 │   └── run_experiment.py   # Einzellauf
 ├── logs/
-│   └── tensorboard/        # Trainingsergebnisse
-├── models/                 # Feedforward-Netz & Aktivierungen
+├── models/  
+│   ├── activations.py      # Stellt Aktivierungen bereit
+│   ├── feedforward.py      # FFN-Implementierung
+│   └── sigmoid_spline_activation.py  # Eigene optimierte Sigmoid Implementierung mit Hilfe von Splines
 ├── results/
-│   └── plots/              # Diagramme
+│   └── plots/              
+│       ├── gradient_heatmaps         # Heatmaps von Gradientenverläufen (norm und mean_abs)
+│       └── loss_acc                  # Graphen für Loss- und Accuracyverläufe (train und val)
 ├── training/
-│   ├── trainer.py
-│   └── utils.py
-├── run_all_experiments.py  # Automatisierter Vergleich
+│   ├── trainer.py          # Train- und Validation-Implementation
+│   └── utils.py            # Utils wie dataloader-Bereitstellung, seed-setting oder Gewichtsinitialisierungs
+├── run_all_experiments.py  # Automatisierter Durchlauf aller Experimente + Plotting
 ├── requirements.txt
 ├── README.md
 └── .gitignore
