@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 
 
-class FFN(nn.Module):
-    """Feed Forward Network"""
+class FNN(nn.Module):
+    """Feedforward Neural Network"""
     def __init__(self, input_dim: int, hidden_dim: int, depth: int, activation_fn: nn.Module, output_dim: int):
-        super(FFN, self).__init__()
+        super(FNN, self).__init__()
         
         layers = [nn.Linear(input_dim, hidden_dim), activation_fn]
         

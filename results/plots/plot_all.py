@@ -148,6 +148,32 @@ def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict):
     print(f'✅ Plot "Loss and Accuracy" of {name} was saved successfully.')
 
 
+def plot_train_times(dfs: dict):
+    df_train_times = pd.DataFrame(
+        [(name.split("_")[1], 
+          name.split("_")[0], 
+          df.iloc[-1]["train_time"] # last entry of "train_time" column
+        ) for name, df in sorted(dfs.items())], 
+        columns=["dataset", "activation", "train_time"]
+    )
+
+    plt.figure(figsize=(8, 5))
+    
+    plt.title("Train Times")
+    sns.barplot(
+        x="dataset",
+        y="train_time",
+        hue="activation",
+        data=df_train_times
+    )
+    plt.xlabel(None)
+    plt.ylabel("Time (s)", rotation=0)
+    plt.tight_layout()
+    save_path = RESULTS_PATH / "plots" / "train_times.png"
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(save_path, dpi=300)
+
+
 def create_ev_dict(dfs: dict) -> dict:
     """
     Create a dictionary of all **extrem values (evs)** over every dataframe.
@@ -179,12 +205,13 @@ def create_ev_dict(dfs: dict) -> dict:
 
 
 def main():
-    dfs = dict(map(lambda dir: (dir.name, pd.read_csv(dir / "metrics.csv")), LOG_PATH.iterdir())) # Dataframes (dfs)
-    evs = create_ev_dict(dfs) # Extrem Values (evs)
-    for name, df in dfs.items():
-        plot_acc_and_loss(name, df, evs)
-        plot_heatmap(name, df, evs)
-
+    dfs = {dir.name: pd.read_csv(dir / "metrics.csv") for dir in LOG_PATH.iterdir()}
+    #evs = create_ev_dict(dfs) # Extrem Values (evs)
+    #for name, df in dfs.items():
+    #    plot_acc_and_loss(name, df, evs)
+    #    plot_heatmap(name, df, evs)
+    plot_train_times(dfs)
+    
 
 if __name__ == "__main__":
     main()

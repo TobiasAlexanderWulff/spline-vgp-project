@@ -4,15 +4,15 @@ import sys
 from pathlib import Path
 import argparse
 import yaml
-from models.feedforward import FFN
-from models.activations import get_activation
-from training.trainer import train
-from training.utils import initialize_weights, set_seed, get_dataloaders
-
 
 # Projekt-Stammverzeichnis zum Modulpfad hinzufügen
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
+
+from models.feedforward import FNN
+from models.activations import get_activation
+from training.trainer import train
+from training.utils import initialize_weights, set_seed, get_dataloaders
 
 
 def load_config(config_path: str) -> dict:
@@ -41,7 +41,7 @@ def main():
     
     # Modell & Aktivierung
     activation_fn = get_activation(config["activation"])
-    model = FFN(
+    model = FNN(
         input_dim=input_dim,
         hidden_dim=config["hidden_dim"],
         depth=config["depth"],
