@@ -179,6 +179,7 @@ class OptimizedSigmoidSpline(nn.Module):
         
         
         plt.tight_layout()
+        plt.savefig("spline_vs_sigmoid.png", dpi=300)
         plt.show()
     
     

@@ -4,6 +4,6 @@ data/cifar10/
 data/FashionMNIST/
 __pycache__/
 logs/
-*.png
+results/
 *.log
 *.csv
