@@ -1,10 +1,48 @@
 # Spline-VGP-Project
 
-Untersuchung splinebasierter Aktivierungsfunktionen in tiefen Feedforward-Netzen zur Milderung des Vanishing-Gradient-Problems.
+In diesem Projekt will ich versuchen, mit Hilfe einer *splinebasierten Abwandlung der Sigmoidfunktion*, das **Vanishing-Gradient-Problem (VGP)** zu vermindern.
 
 ---
 
-## 📦 Setup
+## 📈 Aktivierungen
+
+Um die neue ***splinebasierte Sigmoidfunktion*** auf ihre Nutzen zu überprüfen, vergleiche ich sämtliche Ergebnisse mit denen der ReLU- und Sigmoidfunktion. Die ***Sigmoidfunktion*** ist bekannt dafür in tiefen Netzen mit vielen Schichten besonders anfällig für das VGP zu sein. Die ***ReLU-Aktivierungsfunktion*** hingegen soll im Vergleich als Wegweiser gelten, da sie vom Design her nicht anfällig für das VGP ist und außerdem als Industriestandard für die meisten Neuronalen Netze gilt.
+
+Aktivierungen:
+
+- ReLU
+
+- Sigmoid
+
+- Spline (eigene splinebasierte Abwandlung der Sigmoidfunktion)
+
+> Die ***splinebasierte Abwandlung der Sigmoid-Aktivierungsfunktion*** wird in jeglichen folgenden Abbildungen und Erwähnungen, der Einfachheit halber, nur als ***spline*** bezeichnet.
+
+### 📈 Eigene Spline Aktivierungs
+
+Meine eigene splinebasierte Aktivierungsfunktion basiert auf der *Sigmoidfunktion* und modifiziert diese. Unter der verwendung eines *kubischen Splines* wird die Sigmoidfunktion im Bereich `[-2, 2]` nachgebildet und verläuft außerhalb dieser grenzen linear weiter.
+
+![sigmoid_vs_spline.png](/spline_vs_sigmoid.png)
+
+Wie auf dem rechten Plot der Abbildung zu sehen ist, verläuft die Ableitung der Splinevariante nicht mehr flach außerhalb von `[-2, 2]`, was in der Theorie bereits dem VGP entgegenwirken sollte.
+
+---
+
+## 📦 Datasets
+
+Ich habe mich für die folgenden drei Datasets entschieden, da sie das Netz unterschiedlich stark fordern und somit möglichst diversifizierte Ergebnisse liefern. ***FashionMnist*** ist hier das simpelste Dataset. Es beruht auf 70.000 (train/test 60.000/10.000) 28x28 Bildern, die nur in Grautönen abgebildet sind. Jedes Bild wird hier einem von 10 Bezeichnungen (Klassen) zugeordnet, was in diesem Fall Zalando-Artikel sind. ***Cifar10*** soll hier als erste Steigerung in der Schwierigkeit gelten. Es besteht aus 60.000 (train/test 50.000/10.000) 32x32 farbigen Bildern, die ebenfalls je einer von 10 Klassen zugeordnet werden. Als höchste Steigerung für dieses Projekt soll das Dataset ***TinyImagenet-200*** als Skalierungstest dienen. Mit 100.000 (train/test/val 100.000/10.000/10.000) 64x64 Bildern in Farbe und 200 Klassen ist es das größte und komplexeste Dataset im Vergleich.
+
+1. FashionMnist
+
+2. Cifar10
+
+3. TinyImagenet-200
+
+---
+
+## 🛠️ Setup
+
+Projekt Setup:
 
 ```sh
 python -m venv venv
@@ -20,9 +58,15 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 
 ---
 
-### TinyImageNet Download
+TinyImagenet-200 herunterladen von [kaggle](https://www.kaggle.com/datasets/nikhilshingadiya/tinyimagenet200) oder mit:
 
-:)
+``` sh
+wget http://cs231n.stanford.edu/tiny-imagenet-200.zip
+```
+
+Danach **entpackt** im Projektordner unter `data/` ablegen.
+
+> Alle anderen Datasets werden automatisch mit ausführen des Codes heruntergeladen und gespeichert.
 
 ---
 
