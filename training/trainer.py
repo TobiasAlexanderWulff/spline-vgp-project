@@ -8,7 +8,17 @@ from tqdm import tqdm
 
 
 def evaluate(model, dataloader, criterion, device: str) -> tuple[float, float]:
-    """Evaluates the model"""
+    """Evaluate a model on a given dataloader.
+
+    Args:
+        model: Neural network to evaluate.
+        dataloader: DataLoader providing evaluation data.
+        criterion: Loss function used for evaluation.
+        device: Device on which to run the evaluation.
+
+    Returns:
+        tuple[float, float]: Average loss and accuracy.
+    """
     model.eval()
     total_loss, correct = 0.0, 0
     with torch.no_grad():
@@ -27,7 +37,29 @@ def evaluate(model, dataloader, criterion, device: str) -> tuple[float, float]:
     return avg_loss, accuracy
 
 
-def train(model, dataloader, criterion, optimizer, epochs: int, device: str, val_loader=None, log_dir: str=None):
+def train(
+    model,
+    dataloader,
+    criterion,
+    optimizer,
+    epochs: int,
+    device: str,
+    val_loader=None,
+    log_dir: str | None = None,
+):
+    """Train a model and optionally log gradient statistics.
+
+    Args:
+        model: Neural network to train.
+        dataloader: Training DataLoader.
+        criterion: Loss function for optimization.
+        optimizer: Optimizer instance.
+        epochs: Number of training epochs.
+        device: Device used for training.
+        val_loader: Optional validation DataLoader.
+        log_dir: Directory in which to store metric logs.
+    """
+
     gradient_log = []
     start_time = time.time()
     model.to(device)
@@ -38,26 +70,31 @@ def train(model, dataloader, criterion, optimizer, epochs: int, device: str, val
             real_terminal = open(os.ttyname(1), 'w')  # stdout = FD 1
         except OSError:
             real_terminal = sys.stderr
-        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False, file=real_terminal)
+        progress_bar = tqdm(
+            dataloader,
+            desc=f"Epoch {epoch + 1}/{epochs}",
+            leave=False,
+            file=real_terminal,
+        )
         for images, labels in progress_bar:
             images, labels = images.to(device), labels.to(device)
             images = images.view(images.size(0), -1)
-            
+
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
             progress_bar.set_postfix(loss=loss.item())
             loss.backward()
-            
+
             optimizer.step()
-            
+
             total_loss += loss.item()
             _, predicted = torch.max(outputs.data, 1)
             correct += (predicted == labels).sum().item()
-            
+
         avg_loss = total_loss / len(dataloader)
         accuracy = correct / len(dataloader.dataset)
-        
+
         log_str = f"Epoch [{epoch+1}/{epochs}] Loss: {avg_loss:.4f}, Accuracy: {accuracy:.4f}"
 
         if val_loader is not None:
@@ -68,14 +105,14 @@ def train(model, dataloader, criterion, optimizer, epochs: int, device: str, val
         hours, rem = divmod(elapsed, 3600)
         minutes, seconds = divmod(rem, 60)
         time_str = f"[{hours:02}:{minutes:02}:{seconds:02}]"
-        
-                # Metriken loggen
+
+        # Log gradient metrics
         for name, param in model.named_parameters():
             if param.grad is not None:
                 grad_mean = param.grad.abs().mean()
                 grad_norm = param.grad.norm()
                 gradient_log.append({
-                    "epoch": epoch+1,
+                    "epoch": epoch + 1,
                     "parameter": name,
                     "mean_abs_gradient": grad_mean.item(),
                     "norm_gradient": grad_norm.item(),
@@ -85,21 +122,24 @@ def train(model, dataloader, criterion, optimizer, epochs: int, device: str, val
                     "acc_val": val_acc if val_loader else None,
                     "train_time": elapsed,
                 })
-        
+
         print(f"{time_str} {log_str}", flush=True)
 
     metrics_csv_path = Path(log_dir) / "metrics.csv"
     with open(metrics_csv_path, mode="w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=[
-            "epoch", 
-            "parameter", 
-            "mean_abs_gradient", 
-            "norm_gradient", 
-            "loss_train", 
-            "loss_val",
-            "acc_train",
-            "acc_val",
-            "train_time"
-        ])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "epoch",
+                "parameter",
+                "mean_abs_gradient",
+                "norm_gradient",
+                "loss_train",
+                "loss_val",
+                "acc_train",
+                "acc_val",
+                "train_time",
+            ],
+        )
         writer.writeheader()
         writer.writerows(gradient_log)
