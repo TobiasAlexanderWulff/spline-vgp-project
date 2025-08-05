@@ -61,11 +61,11 @@ def main():
             continue
 
     print("\n✅ Alle Experimente abgeschlossen")
-    print(f"📊 Generiere alle Plots ...")
+    print("📊 Generiere alle Plots ...")
     subprocess.run([
         "python", "results/plots/plot_all.py",
     ])
-    print(f"\n✅ Generierung aller Plots abgeschlossen")
+    print("\n✅ Generierung aller Plots abgeschlossen")
 
 
 if __name__ == "__main__":

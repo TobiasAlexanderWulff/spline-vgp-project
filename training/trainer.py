@@ -36,7 +36,7 @@ def train(model, dataloader, criterion, optimizer, epochs: int, device: str, val
         total_loss, correct = 0.0, 0
         try:
             real_terminal = open(os.ttyname(1), 'w')  # stdout = FD 1
-        except:
+        except OSError:
             real_terminal = sys.stderr
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False, file=real_terminal)
         for images, labels in progress_bar:

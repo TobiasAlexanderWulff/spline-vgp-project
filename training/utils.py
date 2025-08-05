@@ -111,9 +111,9 @@ def get_dataloaders(name: str, batch_size: int, split: str="train"):
                                      std=[0.229, 0.224, 0.225])
             ])
             if split == "train":
-                dataset = ImageFolder(root=f"./data/tiny_imagenet-200/train", transform=transform)
+                dataset = ImageFolder(root="./data/tiny_imagenet-200/train", transform=transform)
             else:
-                dataset = TinyImageNetValDataset(root=f"./data/tiny_imagenet-200/val", transform=transform)
+                dataset = TinyImageNetValDataset(root="./data/tiny_imagenet-200/val", transform=transform)
 
         case _:
             raise ValueError(f"Unbekannter Datensatz: {name}")
