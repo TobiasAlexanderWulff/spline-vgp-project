@@ -43,7 +43,9 @@ def run_experiment(config_path: str) -> bool:
         return True
 
     except subprocess.TimeoutExpired:
-        print(f"⏰ Timeout: {experiment_name} nach 2 Stunden abgebrochen")
+        print(
+            f"⏰ Timeout: {experiment_name} nach {EXPERIMENT_TIMEOUT // 3600} Stunden abgebrochen"
+        )
         return False
     except Exception as e:
         print(f"❌ Ausnahme bei {experiment_name}: {e}")
