@@ -1,18 +1,10 @@
-import torch
-import torch.nn as nn
+import argparse
 import sys
 from pathlib import Path
-import argparse
+
+import torch
+import torch.nn as nn
 import yaml
-
-# Projekt-Stammverzeichnis zum Modulpfad hinzufügen
-project_root = Path(__file__).resolve().parent.parent
-sys.path.append(str(project_root))
-
-from models.feedforward import FNN
-from models.activations import get_activation
-from training.trainer import train
-from training.utils import initialize_weights, set_seed, get_dataloaders
 
 
 def load_config(config_path: str) -> dict:
@@ -25,9 +17,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, required=True, help="Path to config YAML")
     args = parser.parse_args()
-    
+
+    project_root = Path(__file__).resolve().parent.parent
+    sys.path.append(str(project_root))
+
+    from models.feedforward import FNN
+    from models.activations import get_activation
+    from training.trainer import train
+    from training.utils import initialize_weights, set_seed, get_dataloaders
+
     config = load_config(args.config)
-    print(type(config))
     set_seed(config["seed"])
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
