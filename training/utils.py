@@ -53,9 +53,14 @@ class TinyImageNetValDataset(Dataset):
 
 
 def initialize_weights(model: nn.Module, activation_name: str):
-    """
-    Initializes the weights for a model with respect to the activation function.
-    Uses xavier for sigmoid and the custom spline activation and kaiming for ReLU.
+    """Initialize weights based on the chosen activation function.
+
+    Uses Xavier initialization for sigmoid or spline activations and
+    Kaiming initialization for ReLU.
+
+    Args:
+        model (nn.Module): Model whose linear layers will be initialized.
+        activation_name (str): Name of the activation function.
     """
     for module in model.modules():
         if isinstance(module, nn.Linear):
@@ -68,7 +73,7 @@ def initialize_weights(model: nn.Module, activation_name: str):
 
 
 def set_seed(seed: int):
-    """Sets all relevant randomgenerators to use a consistant seed."""
+    """Seed random number generators for reproducibility."""
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
@@ -78,14 +83,24 @@ def set_seed(seed: int):
 
 
 def get_dataloaders(name: str, batch_size: int, split: str="train"):
-    """Loads trainingdata and determs input_dim + output_dim."""
+    """Return a DataLoader along with input and output dimensions.
+
+    Args:
+        name (str): Dataset name ("fashionmnist", "cifar10", or "tiny_imagenet").
+        batch_size (int): Number of samples per batch.
+        split (str, optional): Dataset split to load ("train" or "val").
+
+    Returns:
+        tuple[torch.utils.data.DataLoader, int, int]: DataLoader, input dimension,
+        and number of output classes.
+    """
     match(name.lower()):
         case "fashionmnist":
             input_dim = 28 * 28
             output_dim = 10
             transform = transforms.Compose([
                 transforms.ToTensor(),
-                transforms.Lambda(lambda x: (x - x.mean()) / x.std())   # z-Score pro Bild
+                transforms.Lambda(lambda x: (x - x.mean()) / x.std())   # z-score per image
             ])
             dataset = torchvision.datasets.FashionMNIST(
                 root="./data", train=(split=="train"), download=True, transform=transform)
