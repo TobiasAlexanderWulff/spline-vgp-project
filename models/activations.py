@@ -7,7 +7,7 @@ def get_activation(name: str) -> nn.Module:
     Returns the `nn.Module` equivalent of the activation name passed as input.
     Raises an `ValueError` if the activation is not supported.
     """
-    match(name):
+    match name:
         case "relu":
             return nn.ReLU()
         case "sigmoid":
