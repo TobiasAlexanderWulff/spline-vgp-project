@@ -13,8 +13,10 @@ import os
 
 class TinyImageNetValDataset(Dataset):
     """
-    Custom Dataset implemenation for the TinyImageNet Valdiation Data.
-    This was needed because validation data is differently structured as the training data for the TinyImageNet dataset and because of this the dataloader couldnt load the valiation data.
+    Custom dataset implementation for the TinyImageNet validation data.
+    The validation data is structured differently from the training data for the
+    TinyImageNet dataset, so the default dataloader couldn't load the validation
+    data.
     """
     def __init__(self, root, transform=None):
         self.transform = transform
