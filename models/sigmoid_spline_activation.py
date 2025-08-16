@@ -101,7 +101,7 @@ class OptimizedSigmoidSpline(nn.Module):
             s = torch.where(
                 (self.sig_x[i] <= t) & (t <= self.sig_x[i+1]),
                 self._hermite(self._reparametrize(t, i), self.sig_y[i], self.sig_y[i+1], self._ys[i], self._ys[i+1]),
-                s
+                s # wenn die bedingung nicht zutrifft, ändert sich der tensor `s` für dieses `i` nicht
             )
         return s
     
