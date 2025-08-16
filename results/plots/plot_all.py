@@ -1,12 +1,17 @@
 import seaborn as sns
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+import argparse
 from pathlib import Path
 
+matplotlib.use("Agg")
 
 LOG_PATH = Path("logs/")
+SMOKE_LOG_PATH = Path("logs_smoke/")
 RESULTS_PATH = Path("results/")
+SMOKE_RESULTS_PATH = Path("results/smoke/")
 
 
 def extract_layer_number(param_name: str) -> int:
@@ -21,7 +26,7 @@ def extract_layer_number(param_name: str) -> int:
         return 0
 
 
-def plot_heatmap(name: str, df: pd.DataFrame, evs: dict):
+def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
     """
     Plot heatmaps for `mean_abs_gradient` and `norm_gradient` values. *Weight* and *Bias* data is plotted on different subplots.
     """
@@ -40,12 +45,13 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict):
     pivot_w_norm = pivot_w_norm.loc[sorted_w]
     pivot_b_norm = pivot_b_norm.loc[sorted_b]
     
-    data_w_mean_abs = np.log10(pivot_w_mean_abs.values)
-    data_b_mean_abs = np.log10(pivot_b_mean_abs.values)
+    epsilon = 1e-12
+    data_w_mean_abs = np.log10(np.maximum(pivot_w_mean_abs.values, epsilon))
+    data_b_mean_abs = np.log10(np.maximum(pivot_b_mean_abs.values, epsilon))
     data_w_norm = pivot_w_norm.values
     data_b_norm = pivot_b_norm.values
     
-    _, axs = plt.subplots(
+    fig, axs = plt.subplots(
         2, 2,
         figsize=(18, max(8, len(pivot_w_mean_abs) * 0.4)),
         sharey=True
@@ -104,20 +110,21 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict):
     axs[1, 1].set_ylabel("Layer")
     axs[1, 1].set_yticklabels(labels_layers, rotation=0)
     
-    plt.tight_layout()
+    fig.tight_layout()
     
-    save_path = RESULTS_PATH / "plots" / "gradient_heatmaps" / f"{name}_gradient_heatmap.png"
+    save_path = result_path / "plots" / "gradient_heatmaps" / f"{name}_gradient_heatmap.png"
     save_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(save_path, dpi=300)
+    fig.savefig(save_path, dpi=300)
+    plt.close(fig)
     
     print(f'✅ Plot "Gradient Heatmap" of {name} was saved successfully.')
 
 
 
-def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict):
+def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
     df = df.drop_duplicates(subset="epoch", keep="first", ignore_index=True)
         
-    _, axs = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
     
     title = name.replace("_", " ").title()
     
@@ -139,16 +146,17 @@ def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict):
     axs[1].legend()
     axs[1].grid(True)
     
-    plt.tight_layout()
+    fig.tight_layout()
     
-    save_path = RESULTS_PATH / "plots" / "loss_acc" / f"{name}_loss_acc.png"
+    save_path = result_path / "plots" / "loss_acc" / f"{name}_loss_acc.png"
     save_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(save_path, dpi=300)
+    fig.savefig(save_path, dpi=300)
+    plt.close(fig)
     
     print(f'✅ Plot "Loss and Accuracy" of {name} was saved successfully.')
 
 
-def plot_train_times(dfs: dict):
+def plot_train_times(dfs: dict, result_path: Path):
     df_train_times = pd.DataFrame(
         [(name.split("_")[1], 
           name.split("_")[0], 
@@ -157,7 +165,7 @@ def plot_train_times(dfs: dict):
         columns=["dataset", "activation", "train_time"]
     )
 
-    plt.figure(figsize=(8, 5))
+    fig = plt.figure(figsize=(8, 5))
     
     plt.title("Train Times")
     sns.barplot(
@@ -168,11 +176,15 @@ def plot_train_times(dfs: dict):
     )
     plt.xlabel(None)
     plt.ylabel("Time (s)", rotation=0)
-    plt.tight_layout()
-    save_path = RESULTS_PATH / "plots" / "train_times.png"
+    
+    fig.tight_layout()
+    
+    save_path = result_path / "plots" / "train_times.png"
     save_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(save_path, dpi=300)
-
+    fig.savefig(save_path, dpi=300)
+    plt.close(fig)
+    
+    print(f'✅ Plot "Train Times" was saved successfully.')
 
 def create_ev_dict(dfs: dict) -> dict:
     """
@@ -201,16 +213,34 @@ def create_ev_dict(dfs: dict) -> dict:
             evs[f"{prefix}_min"] = transform(evs[f"{prefix}_min"])
             evs[f"{prefix}_max"] = transform(evs[f"{prefix}_max"])
 
+    vals = np.concatenate([df["mean_abs_gradient"].to_numpy() for df in dfs.values()])
+    vals = np.clip(vals, 1e-12, None)
+    evs["mean_min"] = np.log10(vals.min())
+    evs["mean_max"] = np.log10(vals.max())
+
     return evs
 
 
 def main():
-    dfs = {dir.name: pd.read_csv(dir / "metrics.csv") for dir in LOG_PATH.iterdir()}
-    #evs = create_ev_dict(dfs) # Extrem Values (evs)
-    #for name, df in dfs.items():
-    #    plot_acc_and_loss(name, df, evs)
-    #    plot_heatmap(name, df, evs)
-    plot_train_times(dfs)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--smoke", action="store_true", help="Set flag to plot smoke runs instead")
+    args = parser.parse_args()
+    
+    if args.smoke:
+        dfs = {dir.name: pd.read_csv(dir / "metrics.csv") for dir in SMOKE_LOG_PATH.iterdir()}
+        result_path = SMOKE_RESULTS_PATH
+    else:
+        dfs = {dir.name: pd.read_csv(dir / "metrics.csv") for dir in LOG_PATH.iterdir()}
+        result_path = RESULTS_PATH
+        
+    evs = create_ev_dict(dfs) # Extrem Values (evs)
+    
+    for name, df in dfs.items():
+        plot_acc_and_loss(name, df, evs, result_path)
+        plot_heatmap(name, df, evs, result_path)
+    plot_train_times(dfs, result_path)
+    
+    plt.close("all")
     
 
 if __name__ == "__main__":
