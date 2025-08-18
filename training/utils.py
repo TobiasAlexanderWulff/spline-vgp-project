@@ -133,6 +133,14 @@ def get_dataloaders(name: str, batch_size: int, split: str="train"):
         case _:
             raise ValueError(f"Unbekannter Datensatz: {name}")
     
-    loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    loader = torch.utils.data.DataLoader(
+        dataset, 
+        batch_size=batch_size, 
+        shuffle=True,
+        num_workers=min(8, os.cpu_count()-2),
+        pin_memory=True,
+        persistent_workers=True,
+        prefetch_factor=4
+        )
     return loader, input_dim, output_dim
 
