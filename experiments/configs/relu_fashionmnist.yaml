@@ -1,10 +1,10 @@
 experiment_name: relu_fashionmnist
 dataset: fashionmnist
 activation: relu
-epochs: 50
-batch_size: 128
+epochs: 250
+batch_size: 1024
 learning_rate: 0.001
 hidden_dim: 512
-depth: 8
+depth: 16
 seed: 42
 log_dir: logs/relu_fashionmnist
