@@ -1,0 +1,13 @@
+experiment_name: spline_tinyimagenet_smoke_1024
+seed: 42
+
+dataset: tiny_imagenet
+batch_size: 1024
+
+activation: spline
+hidden_dim: 1024
+depth: 8
+learning_rate: 0.0003
+epochs: 5
+
+log_dir: logs_smoke/spline_tinyimagenet_smoke_1024
