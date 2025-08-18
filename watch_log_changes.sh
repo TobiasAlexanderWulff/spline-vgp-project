@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-inotifywait -m -r -e modify logs |
+inotifywait -m -r -e modify . |
 while read -r directory events filename; do
 	if [[ "$filename" == *.log ]]; then
 		dir_name=$(basename "$directory")
