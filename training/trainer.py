@@ -1,4 +1,9 @@
 import torch
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+torch.set_float32_matmul_precision("high")
+
+import math
 import csv
 import os
 import time
@@ -93,7 +98,7 @@ def train(
         )
         
         for images, labels in progress_bar:
-            images, labels = images.to(device), labels.to(device)
+            images, labels = images.to(device, non_blocking=True), labels.to(device, non_blocking=True)
             images = images.view(images.size(0), -1)
 
             optimizer.zero_grad()
@@ -109,7 +114,7 @@ def train(
                     grad_sum_abs[name] += grad.abs().mean().item()
                     grad_sum_norm[name] += grad.norm().item()
                     grad_count[name] += 1
-
+            
             optimizer.step()
 
             total_loss += loss.item()
