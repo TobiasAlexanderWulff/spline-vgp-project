@@ -63,7 +63,7 @@ unzip tiny-imagenet-200.zip -d data/
 
 Struktur (relevant):
 
-```kotlin
+```text
 data/
 └── tiny-imagenet-200/
     ├── train/
@@ -146,7 +146,7 @@ Erzeugt:
 - **Trainingszeiten**-Balkendiagramm
 
 Ablage:
-```markdown
+```text
 results/
 └── plots/
     ├── gradient_heatmaps/
