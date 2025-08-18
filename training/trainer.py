@@ -10,6 +10,7 @@ import time
 import sys
 from collections import defaultdict
 from pathlib import Path
+from diagnostics import register_spline_outside_hooks, check_and_log_anomaly
 from tqdm import tqdm
 
 
@@ -69,6 +70,11 @@ def train(
     
     Path(log_dir).mkdir(exist_ok=True, parents=True)
     
+    diag_dir = Path(log_dir) / "diag"
+    anomalies_csv = diag_dir / "anomalies.csv"
+    outside_csv   = diag_dir / "outside.csv"
+    diag_dir.mkdir(parents=True, exist_ok=True)
+    
     start_time = time.time()
     model.to(device)
     
@@ -97,7 +103,7 @@ def train(
             file=real_terminal,
         )
         
-        for images, labels in progress_bar:
+        for batch_idx, (images, labels) in enumerate(progress_bar):
             images, labels = images.to(device, non_blocking=True), labels.to(device, non_blocking=True)
             images = images.view(images.size(0), -1)
 
@@ -106,6 +112,23 @@ def train(
             loss = criterion(outputs, labels)
             progress_bar.set_postfix(loss=loss.item())
             loss.backward()
+            
+            # Gesamtnorm der Gradienten (ohne Clipping)
+            gnorm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=float('inf')).item()
+            lr = optimizer.param_groups[0]["lr"]
+
+            # Anomalien loggen (NaN/Inf oder sehr große Norm)
+            check_and_log_anomaly(
+                epoch=epoch + 1,
+                phase="train",
+                batch_idx=batch_idx,   # oder bidx – je nach deinem Variablennamen
+                loss=loss.item(),
+                grad_norm=gnorm,
+                lr=lr,
+                csv_path=str(anomalies_csv),
+            )
+            if (not math.isfinite(gnorm)) or gnorm > 1e3 or (not math.isfinite(loss.item())):
+                print(f"[DIAG] epoch={epoch+1} batch={batch_idx} loss={loss.item():.3g} gnorm={gnorm:.3g} lr={lr:.2e}")
             
             # Gradienten pro Batch sammeln
             for name, param in model.named_parameters():
@@ -129,6 +152,23 @@ def train(
         if val_loader is not None:
             val_loss, val_acc = evaluate(model, val_loader, criterion, device)
             log_str += f" | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}"
+
+        # Einen Val-Batch ziehen (deterministisch genug für Trend)
+        val_images, _val_labels = next(iter(val_loader))
+        val_images = val_images.to(device, non_blocking=True)
+        
+        val_images = val_images.view(val_images.size(0), -1)
+
+        # Hooks registrieren -> einmal forward -> Hooks wieder entfernen
+        handles, stats = register_spline_outside_hooks(model)
+        model.eval()
+        with torch.no_grad():
+            _ = model(val_images)
+        for h in handles:
+            h.remove()
+
+        # Pro Layer die mittlere Outside-Quote in CSV schreiben
+        stats.dump_csv(str(outside_csv), epoch=epoch+1)
 
         elapsed = int(time.time() - start_time)
         hours, rem = divmod(elapsed, 3600)
