@@ -45,11 +45,15 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
     pivot_w_norm = pivot_w_norm.loc[sorted_w]
     pivot_b_norm = pivot_b_norm.loc[sorted_b]
     
-    epsilon = 1e-12
-    data_w_mean_abs = np.log10(np.maximum(pivot_w_mean_abs.values, epsilon))
-    data_b_mean_abs = np.log10(np.maximum(pivot_b_mean_abs.values, epsilon))
-    data_w_norm = pivot_w_norm.values
-    data_b_norm = pivot_b_norm.values
+    #epsilon = 1e-24
+    #data_w_mean_abs = np.log10(np.maximum(pivot_w_mean_abs.values, epsilon))
+    #data_b_mean_abs = np.log10(np.maximum(pivot_b_mean_abs.values, epsilon))
+    #data_w_norm = np.log10(np.maximum(pivot_w_norm.values, epsilon))
+    #data_b_norm = np.log10(np.maximum(pivot_b_norm.values, epsilon))
+    data_w_mean_abs = np.log10(pivot_w_mean_abs.values)
+    data_b_mean_abs = np.log10(pivot_b_mean_abs.values)
+    data_w_norm = np.log10(pivot_w_norm.values)
+    data_b_norm = np.log10(pivot_b_norm.values)
     
     fig, axs = plt.subplots(
         2, 2,
@@ -68,7 +72,7 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
         vmax=evs["mean_max"],
         cbar=None
     )
-    axs[0, 0].set_title(f"{title} - Weight Log10-|Gradient| Mean")
+    axs[0, 0].set_title(f"{title} - Weight Log10 |Gradient| Mean")
     axs[0, 0].set_xlabel("Epoch")
     axs[0, 0].set_ylabel("Layer")
     axs[0, 0].set_yticklabels(labels_layers, rotation=0)
@@ -80,7 +84,7 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
         vmin=evs["mean_min"],
         vmax=evs["mean_max"]
     )
-    axs[0, 1].set_title(f"{title} - Bias Log10-|Gradient| Mean")
+    axs[0, 1].set_title(f"{title} - Bias Log10 |Gradient| Mean")
     axs[0, 1].set_xlabel("Epoch")
     axs[0, 1].set_ylabel("Layer")
     axs[0, 1].set_yticklabels(labels_layers, rotation=0)
@@ -93,7 +97,7 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
         vmax=evs["norm_max"],
         cbar=None
     )
-    axs[1, 0].set_title(f"{title} - Weight Gradient Norm")
+    axs[1, 0].set_title(f"{title} - Weight Log10 Gradient Norm")
     axs[1, 0].set_xlabel("Epoch")
     axs[1, 0].set_ylabel("Layer")
     axs[1, 0].set_yticklabels(labels_layers, rotation=0)
@@ -105,7 +109,7 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
         vmin=evs["norm_min"],
         vmax=evs["norm_max"]
     )
-    axs[1, 1].set_title(f"{title} - Bias Gradient Norm")
+    axs[1, 1].set_title(f"{title} - Bias Log10 Gradient Norm")
     axs[1, 1].set_xlabel("Epoch")
     axs[1, 1].set_ylabel("Layer")
     axs[1, 1].set_yticklabels(labels_layers, rotation=0)
@@ -128,11 +132,11 @@ def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict, result_path: Path)
     
     title = name.replace("_", " ").title()
     
-    axs[0].set_title(f"{title} - Loss")
-    axs[0].plot(df["epoch"], df["loss_train"], label="Train Loss")
-    axs[0].plot(df["epoch"], df["loss_val"], label="Val Loss")
+    axs[0].set_title(f"{title} - Log10-Loss")
+    axs[0].plot(df["epoch"], np.log10(df["loss_train"]), label="Train Loss")
+    axs[0].plot(df["epoch"], np.log10(df["loss_val"]), label="Val Loss")
     axs[0].set_xlabel("Epoch")
-    axs[0].set_ylabel("Loss")
+    axs[0].set_ylabel("Log10-Loss")
     axs[0].set_ylim(evs["loss_min"], evs["loss_max"])
     axs[0].legend()
     axs[0].grid(True)
@@ -156,24 +160,44 @@ def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict, result_path: Path)
     print(f'✅ Plot "Loss and Accuracy" of {name} was saved successfully.')
 
 
-def plot_train_times(dfs: dict, result_path: Path):
-    df_train_times = pd.DataFrame(
-        [(name.split("_")[1], 
-          name.split("_")[0], 
-          df.iloc[-1]["train_time"] # last entry of "train_time" column
-        ) for name, df in sorted(dfs.items())], 
-        columns=["dataset", "activation", "train_time"]
+def plot_train_times(dfs: dict, result_path: Path, smoke: bool):
+    if smoke:
+        df_train_times = pd.DataFrame(
+            [(name.split("_")[1], 
+              name.split("_")[0],
+              df.iloc[-1]["train_time"], # last entry of "train_time" column
+              int(name.split("_")[-1]),
+            ) for name, df in sorted(dfs.items())], 
+            columns=["dataset", "activation", "train_time", "batch_size"]
     )
+    else:
+        df_train_times = pd.DataFrame(
+            [(name.split("_")[1], 
+              name.split("_")[0], 
+              df.iloc[-1]["train_time"] # last entry of "train_time" column
+            ) for name, df in sorted(dfs.items())], 
+            columns=["dataset", "activation", "train_time"]
+        )
 
     fig = plt.figure(figsize=(8, 5))
     
     plt.title("Train Times")
-    sns.barplot(
-        x="dataset",
-        y="train_time",
-        hue="activation",
-        data=df_train_times
-    )
+    
+    if smoke:
+        sns.barplot(
+            x="batch_size",
+            y="train_time",
+            hue="activation",
+            data=df_train_times
+        )
+    else:
+        sns.barplot(
+            x="dataset",
+            y="train_time",
+            hue="activation",
+            data=df_train_times
+        )
+        
     plt.xlabel(None)
     plt.ylabel("Time (s)", rotation=0)
     
@@ -195,8 +219,8 @@ def create_ev_dict(dfs: dict) -> dict:
     
     calc_config = {
         "mean": ("mean_abs_gradient", np.log10),
-        "norm": ("norm_gradient", None),
-        "loss": (["loss_train", "loss_val"], None),
+        "norm": ("norm_gradient", np.log10),
+        "loss": (["loss_train", "loss_val"], np.log10),
         "acc": (["acc_train", "acc_val"], None)
     }
     
@@ -212,11 +236,6 @@ def create_ev_dict(dfs: dict) -> dict:
         if transform:
             evs[f"{prefix}_min"] = transform(evs[f"{prefix}_min"])
             evs[f"{prefix}_max"] = transform(evs[f"{prefix}_max"])
-
-    vals = np.concatenate([df["mean_abs_gradient"].to_numpy() for df in dfs.values()])
-    vals = np.clip(vals, 1e-12, None)
-    evs["mean_min"] = np.log10(vals.min())
-    evs["mean_max"] = np.log10(vals.max())
 
     return evs
 
@@ -238,7 +257,7 @@ def main():
     for name, df in dfs.items():
         plot_acc_and_loss(name, df, evs, result_path)
         plot_heatmap(name, df, evs, result_path)
-    plot_train_times(dfs, result_path)
+    plot_train_times(dfs, result_path, args.smoke)
     
     plt.close("all")
     
