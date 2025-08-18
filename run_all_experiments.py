@@ -2,15 +2,21 @@ import subprocess
 import os
 import shutil
 import argparse
+import time
+import yaml
 from pathlib import Path
 
 
 CONFIG_DIR = Path("experiments/configs/")
 SMOKE_CONFIG_DIR = Path("experiments/configs/smoke/")
-LOG_DIR = Path("logs/")
-SMOKE_LOG_DIR = Path("logs_smoke/")
 
 EXPERIMENT_TIMEOUT = 3 * 60 * 60    # 3 Stunden
+
+
+def load_config(config_path: str) -> dict:
+    """Loads a yaml config file."""
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
 
 
 def _clear_log_dir(log_dir: str):
@@ -20,14 +26,15 @@ def _clear_log_dir(log_dir: str):
     os.makedirs(log_dir, exist_ok=True)
 
 
-def run_experiment(config_path: str, log_dir: Path) -> bool:
+def run_experiment(config_path: str) -> bool:
     """Runs an experiment. Needs its config path."""
-    experiment_name = config_path.stem
-    experiment_log_dir = log_dir / experiment_name
+    config = load_config(config_path)
+    experiment_name = config["experiment_name"]
+    experiment_log_dir = config["log_dir"]
     
     _clear_log_dir(experiment_log_dir)
-    experiment_log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = experiment_log_dir / "training.log"
+    log_file = Path(experiment_log_dir) / "training.log"
+    
     print(f"\n🔁 Starte Experiment: {experiment_name} → logge nach {log_file}")
     
     try:
@@ -55,17 +62,19 @@ def main():
     
     if args.smoke:
         config_dir = SMOKE_CONFIG_DIR
-        log_dir = SMOKE_LOG_DIR
     else:
         config_dir = CONFIG_DIR
-        log_dir = LOG_DIR
     
     config_files = sorted(config_dir.glob("*.yaml"))
     
+    start_time = time.time()
+    
     for config_path in config_files:        
-        run_experiment(config_path, log_dir)
+        run_experiment(config_path)
+        
+    elapsed_time = int(time.time() - start_time)
 
-    print("\n✅ Alle Experimente abgeschlossen")
+    print(f"\n✅ Alle Experimente abgeschlossen in {elapsed_time} Sekunden")
     print("📊 Generiere alle Plots ...")
     if args.smoke:
         subprocess.run([
