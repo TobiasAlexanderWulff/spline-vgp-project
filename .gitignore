@@ -28,6 +28,9 @@ ENV/
 logs/
 *.log
 
+# Archive
+archive/
+
 # Results (ignore outputs but keep plotting script)
 results/
 !results/plots/
