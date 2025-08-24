@@ -14,6 +14,112 @@ RESULTS_PATH = Path("results/")
 SMOKE_RESULTS_PATH = Path("results/smoke/")
 
 
+def _parse_name_to_dataset_activation(name: str) -> tuple[str, str]:
+    """
+    Returns (dataset, activation) from a log directory name.
+    Expected patterns like 'relu_cifar10', 'spline_fashionmnist', 'sigmoid_tinyimagenet'.
+    Falls back to 'unknown' if parsing fails.
+    """
+    parts = name.lower().split("_")
+    if len(parts) >= 2:
+        activation, dataset = parts[0], parts[1]
+    else:
+        activation, dataset = "unknown", "unknown"
+    return dataset, activation
+
+
+def _epoch_view(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Collapse the metrics dataframe to one row per epoch so that duplicated rows
+    (caused by parameter-wise logging) do not distort the curves.
+    """
+    cols = ["loss_train", "loss_val", "acc_train", "acc_val"]
+    g = df.groupby("epoch", as_index=False)[cols].first()
+    return g.sort_values("epoch")
+
+
+def _pretty_dataset_name(ds: str) -> str:
+    ds = ds.lower()
+    if ds == "fashionmnist":
+        return "FashionMNIST"
+    if ds == "cifar10":
+        return "CIFAR-10"
+    if ds in ("tinyimagenet", "tinyimagenet-200", "tiny_image_net", "tiny-image-net"):
+        return "Tiny ImageNet-200"
+    return ds
+
+
+def _pretty_act_name(act: str) -> str:
+    a = act.lower()
+    if a == "relu":
+        return "ReLU"
+    if a == "spline":
+        return "Spline"
+    if a == "sigmoid":
+        return "Sigmoid"
+    return act
+
+
+def plot_combined_for_all_datasets(dfs: dict[str, pd.DataFrame], evs: dict, result_path: Path) -> None:
+    """
+    Create for each dataset two figures:
+      1) Accuracy (train = solid, val = dashed) for all activations
+      2) Log10-Loss (train = solid, val = dashed) for all activations
+    """
+    # group by dataset
+    grouped: dict[str, dict[str, pd.DataFrame]] = {}
+    for name, df in dfs.items():
+        dataset, activation = _parse_name_to_dataset_activation(name)
+        grouped.setdefault(dataset, {})[activation] = _epoch_view(df)
+
+    color_map = {"relu": "C0", "spline": "C1", "sigmoid": "C2"}
+    order = ["relu", "spline", "sigmoid"]
+
+    outdir = result_path / "plots" / "combined"
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    for dataset, act_dict in grouped.items():
+        # ACCURACY
+        fig_acc, ax_acc = plt.subplots(figsize=(10, 5), constrained_layout=True)
+        title = f"{_pretty_dataset_name(dataset)} – Accuracy (alle Aktivierungen)"
+        ax_acc.set_title(title)
+        for act in [a for a in order if a in act_dict]:
+            dfe = act_dict[act]
+            label_base = _pretty_act_name(act)
+            color = color_map.get(act, None)
+            ax_acc.plot(dfe["epoch"], dfe["acc_train"], label=f"{label_base} Train", linestyle="-", color=color)
+            ax_acc.plot(dfe["epoch"], dfe["acc_val"],   label=f"{label_base} Val",   linestyle="--", color=color)
+        ax_acc.set_xlabel("Epoch")
+        ax_acc.set_ylabel("Accuracy")
+        if "acc_min" in evs and "acc_max" in evs:
+            ax_acc.set_ylim(evs["acc_min"], evs["acc_max"])
+        ax_acc.grid(True, alpha=0.3)
+        ax_acc.legend(ncols=3, frameon=True)
+        fig_acc.savefig(outdir / f"{dataset}_combined_accuracy.png", dpi=300)
+        plt.close(fig_acc)
+
+        # LOG10 LOSS
+        fig_loss, ax_loss = plt.subplots(figsize=(10, 5), constrained_layout=True)
+        title = f"{_pretty_dataset_name(dataset)} – Log10-Loss (alle Aktivierungen)"
+        ax_loss.set_title(title)
+        for act in [a for a in order if a in act_dict]:
+            dfe = act_dict[act]
+            label_base = _pretty_act_name(act)
+            color = color_map.get(act, None)
+            tr = np.log10(dfe["loss_train"].to_numpy())
+            va = np.log10(dfe["loss_val"].to_numpy())
+            ax_loss.plot(dfe["epoch"], tr, label=f"{label_base} Train", linestyle="-",  color=color)
+            ax_loss.plot(dfe["epoch"], va, label=f"{label_base} Val",   linestyle="--", color=color)
+        ax_loss.set_xlabel("Epoch")
+        ax_loss.set_ylabel("Log10-Loss")
+        if "loss_min" in evs and "loss_max" in evs:
+            ax_loss.set_ylim(evs["loss_min"], evs["loss_max"])
+        ax_loss.grid(True, alpha=0.3)
+        ax_loss.legend(ncols=3, frameon=True)
+        fig_loss.savefig(outdir / f"{dataset}_combined_log10loss.png", dpi=300)
+        plt.close(fig_loss)
+
+
 def extract_layer_number(param_name: str) -> int:
     """
     Extract the layer number of a parameter name like `model.2.weight`.
@@ -339,7 +445,9 @@ def main():
         plot_heatmap(name, df, evs, result_path)
         plot_overall_heatmap(name, df, evs, result_path)
     plot_train_times(dfs, result_path, args.smoke)
-        
+    
+    plot_combined_for_all_datasets(dfs, evs, result_path)
+    
     plt.close("all")
     
 

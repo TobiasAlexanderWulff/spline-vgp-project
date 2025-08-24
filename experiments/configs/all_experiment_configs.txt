@@ -1,0 +1,125 @@
+# experiments/configs/relu_cifar10.yaml
+experiment_name: relu_cifar10
+seed: 42
+
+dataset: cifar10
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: relu
+learning_rate: 1.0e-3
+epochs: 250
+
+log_dir: logs/relu_cifar10
+
+# experiments/configs/relu_fashionmnist.yaml
+experiment_name: relu_fashionmnist
+seed: 42
+
+dataset: fashionmnist
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: relu
+learning_rate: 1.0e-3
+epochs: 250
+
+log_dir: logs/relu_fashionmnist
+
+# experiments/configs/relu_tinyimagenet.yaml
+experiment_name: relu_tinyimagenet
+seed: 42
+
+dataset: tiny_imagenet
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: relu
+learning_rate: 1.0e-3
+epochs: 250
+
+log_dir: logs/relu_tinyimagenet
+
+# experiments/configs/sigmoid_cifar10.yaml
+experiment_name: sigmoid_cifar10
+seed: 42
+
+dataset: cifar10
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: sigmoid
+learning_rate: 0.3e-3
+epochs: 250
+
+log_dir: logs/sigmoid_cifar10
+
+# experiments/configs/sigmoid_fashionmnist.yaml
+experiment_name: sigmoid_fashionmnist
+seed: 42
+
+dataset: fashionmnist
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: sigmoid
+learning_rate: 0.3e-3
+epochs: 250
+
+log_dir: logs/sigmoid_fashionmnist
+
+# experiments/configs/sigmoid_tinyimagenet.yaml
+experiment_name: sigmoid_tinyimagenet
+seed: 42
+
+dataset: tiny_imagenet
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: sigmoid
+learning_rate: 0.3e-3
+epochs: 250
+
+log_dir: logs/sigmoid_tinyimagenet
+
+# experiments/configs/spline_cifar10.yaml
+experiment_name: spline_cifar10
+seed: 42
+
+dataset: cifar10
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: spline
+learning_rate: 0.3e-3
+epochs: 250
+
+log_dir: logs/spline_cifar10
+
+# experiments/configs/spline_fashionmnist.yaml
+experiment_name: spline_fashionmnist
+seed: 42
+
+dataset: fashionmnist
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: spline
+learning_rate: 0.3e-3
+epochs: 250
+
+log_dir: logs/spline_fashionmnist
+
+# experiments/configs/spline_tinyimagenet.yaml
+experiment_name: spline_tinyimagenet
+seed: 42
+
+dataset: tiny_imagenet
+batch_size: 1024
+hidden_dim: 512
+depth: 16
+activation: spline
+learning_rate: 0.3e-3
+epochs: 250
+
+log_dir: logs/spline_tinyimagenet
