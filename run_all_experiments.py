@@ -35,7 +35,7 @@ def run_experiment(config_path: str) -> bool:
     _clear_log_dir(experiment_log_dir)
     log_file = Path(experiment_log_dir) / "training.log"
     
-    print(f"\n🔁 Starte Experiment: {experiment_name} → logge nach {log_file}")
+    print(f"\n[INFO] Starte Experiment: {experiment_name} → logge nach {log_file}")
     
     try:
         with open(log_file, "w") as logfile:
@@ -46,13 +46,13 @@ def run_experiment(config_path: str) -> bool:
                 timeout=EXPERIMENT_TIMEOUT
             )
         if result.returncode != 0:
-            print(f"❌ Fehler: {experiment_name} endete mit Exit-Code {result.returncode}")
+            print(f"[ERROR] Fehler: {experiment_name} endete mit Exit-Code {result.returncode}")
     except subprocess.TimeoutExpired:
         print(
-            f"⏰ Timeout: {experiment_name} nach {EXPERIMENT_TIMEOUT // 3600} Stunden abgebrochen"
+            f"[WARNING] Timeout: {experiment_name} nach {EXPERIMENT_TIMEOUT // 3600} Stunden abgebrochen"
         )
     except Exception as e:
-        print(f"❌ Ausnahme bei {experiment_name}: {e}")
+        print(f"[ERROR] Ausnahme bei {experiment_name}: {e}")
 
 
 def main():
@@ -74,8 +74,8 @@ def main():
         
     elapsed_time = int(time.time() - start_time)
 
-    print(f"\n✅ Alle Experimente abgeschlossen in {elapsed_time} Sekunden")
-    print("📊 Generiere alle Plots ...")
+    print(f"\n[SUCCESS] Alle Experimente abgeschlossen in {elapsed_time} Sekunden")
+    print("[INFO] Generiere alle Plots ...")
     if args.smoke:
         subprocess.run([
             "python", "results/plots/plot_all.py", "--smoke",
@@ -84,7 +84,7 @@ def main():
         subprocess.run([
             "python", "results/plots/plot_all.py",
         ])
-    print("\n✅ Generierung aller Plots abgeschlossen")
+    print("\n[SUCCESS] Generierung aller Plots abgeschlossen")
 
 
 if __name__ == "__main__":

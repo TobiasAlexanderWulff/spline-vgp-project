@@ -28,6 +28,7 @@ class OptimizedSigmoidSpline(nn.Module):
         # Skalarwerte extrahieren
         self._y0s = (self.sig_ys[0] * (self.sig_x[1] - self.sig_x[0])).item()
         self._yns = (self.sig_ys[-1] * (self.sig_x[-1] - self.sig_x[-2])).item()
+    
         self._ys = self._solve_linear_system()
 
 
@@ -48,17 +49,18 @@ class OptimizedSigmoidSpline(nn.Module):
             + torch.diag(torch.ones(self.n-2), 1) 
             + torch.diag(torch.ones(self.n-2), -1)
             )
-        
+                
         # Vektor b mit eingebauten Randbedingungen:
-        # [3 * (y_1 - y_0)]
-        # [3 * (y_2 - y_0)]
-        # ...
-        # [3 * (y_n - y_{n-2})]
+        # [ 3 * (y_{2} - y_{0}) ]       [ ys_{0}]
+        # [ 3 * (y_{3} - y_{1}) ]       [   0   ]
+        # [         ...         ]   -   [  ...  ]
+        # [         ...         ]       [   0   ]
+        # [3 * (y_{n} - y_{n-2})]       [ ys_{n}]
         b = 3 * (self.sig_y[2:] - self.sig_y[:-2])
         b[0] -= self._y0s
         b[self.n-2] -= self._yns
         
-        # Löse das lineare Gleichungssystem
+        # Löse das lineare Gleichungssystem nach c
         c = torch.linalg.solve(A, b)
         
         
@@ -192,7 +194,7 @@ class OptimizedSigmoidSpline(nn.Module):
 
 
 if __name__ == "__main__":
-    model = OptimizedSigmoidSpline()
+    model = OptimizedSigmoidSpline(x_limit=2)
     t = torch.linspace(-15, 15, 1000, requires_grad=True, device="cuda")
     y = model(t)
     

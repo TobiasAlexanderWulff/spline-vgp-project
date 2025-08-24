@@ -90,7 +90,7 @@ def plot_overall_heatmap(name: str, df: pd.DataFrame,evs: dict, result_path: Pat
     fig.savefig(save_path, dpi=300)
     plt.close(fig)
 
-    print(f'✅ Plot "Overall Gradient Heatmap" of {name} was saved successfully.')
+    print(f'[SUCCESS] Plot "Overall Gradient Heatmap" of {name} was saved successfully.')
 
 
 
@@ -191,7 +191,7 @@ def plot_heatmap(name: str, df: pd.DataFrame, evs: dict, result_path: Path):
     fig.savefig(save_path, dpi=300)
     plt.close(fig)
     
-    print(f'✅ Plot "Gradient Heatmap" of {name} was saved successfully.')
+    print(f'[SUCCESS] Plot "Gradient Heatmap" of {name} was saved successfully.')
 
 
 
@@ -227,7 +227,7 @@ def plot_acc_and_loss(name: str, df: pd.DataFrame, evs: dict, result_path: Path)
     fig.savefig(save_path, dpi=300)
     plt.close(fig)
     
-    print(f'✅ Plot "Loss and Accuracy" of {name} was saved successfully.')
+    print(f'[SUCCESS] Plot "Loss and Accuracy" of {name} was saved successfully.')
 
 
 def plot_train_times(dfs: dict, result_path: Path, smoke: bool):
@@ -278,7 +278,7 @@ def plot_train_times(dfs: dict, result_path: Path, smoke: bool):
     fig.savefig(save_path, dpi=300)
     plt.close(fig)
     
-    print(f'✅ Plot "Train Times" was saved successfully.')
+    print(f'[SUCCESS] Plot "Train Times" was saved successfully.')
 
 
 def create_ev_dict(dfs: dict) -> dict:
@@ -339,7 +339,7 @@ def main():
         plot_heatmap(name, df, evs, result_path)
         plot_overall_heatmap(name, df, evs, result_path)
     plot_train_times(dfs, result_path, args.smoke)
-    
+        
     plt.close("all")
     
 

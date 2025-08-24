@@ -6,14 +6,14 @@ Untersuchung einer **Spline-basierten Sigmoid-Aktivierungsfunktion** zur Abschw�
 
 ---
 
-## 🔬 Idee & Hypothese
+## Idee & Hypothese
 
 - **Warum Spline?** Sigmoid sättigt für große |x| → Gradienten verschwinden. Die Spline-Variante verhält sich *sigmoid-ähnlich* nahe 0, läuft aber **linear** außerhalb `[-2, 2]`.  
 - **Hypothese:** stabilere Gradienten in tiefen MLPs → weniger VGP-Effekte (sichtbar in Gradienten-Heatmaps), ohne die Robustheit von ReLU vollständig zu verlieren.
 
 ---
 
-## 🧩 Aktivierungsfunktionen
+## Aktivierungsfunktionen
 
 - **ReLU**  
 - **Sigmoid**
@@ -29,7 +29,7 @@ Illustration (Sigmoid vs. Spline sowie Ableitungen):
 
 ---
 
-## 📦 Datensätze
+## Datensätze
 
 - **FashionMNIST** – 60 000 Graustufenbilder 28×28 (10 Klassen)  
 - **CIFAR-10** – 50 000 Farbbilder 32×32 (10 Klassen)  
@@ -39,7 +39,7 @@ Für FashionMNIST/CIFAR-10 dient das Testset als **Validation** (keine finale Te
 
 ---
 
-## 🛠️ Setup
+## Setup
 
 Voraussetzungen:
 - Python **3.11** (empfohlen)
@@ -74,7 +74,7 @@ data/
 
 ---
 
-## ⚙️ Konfigurationen
+## Konfigurationen
 
 Experimente werden über YAML-Dateien definiert (Beispiel):
 
@@ -96,7 +96,7 @@ log_dir: logs/spline_cifar10
 
 ---
 
-## 🚀 Einzelexperiment starten
+## Einzelexperiment starten
 
 ```bash
 python experiments/run_experiment.py --config experiments/configs/spline_cifar10.yaml
@@ -112,7 +112,7 @@ Läuft auf GPU, falls verfügbar. Logs/Outputs:
 
 ---
 
-## 🔁 Alle Experimente ausführen
+## Alle Experimente ausführen
 
 Alle YAMLs in experiments/configs/ werden nacheinander trainiert und anschließend automatisch geplottet:
 
@@ -129,7 +129,7 @@ python run_all_experiments.py --smoke
 
 ---
 
-## 📊 Auswertung & Plots
+## Auswertung & Plots
 
 Alle vorhandenen CSV-Logs plotten:
 
@@ -156,7 +156,7 @@ results/
 
 ---
 
-## 🧱 Architektur (kurz)
+## Architektur (kurz)
 
 - **Modell:** tiefes MLP (FNN), Bilder werden flach eingegeben.
 - **Initialisierung:** Xavier-Uniform (Sigmoid/Spline), Kaiming-Uniform (ReLU).
@@ -165,14 +165,14 @@ results/
 
 ---
 
-## 🧪 Reproduzierbarkeit & Performance
+## Reproduzierbarkeit & Performance
 
 - Feste Seeds für Python/NumPy/PyTorch; deterministische CUDNN-Einstellungen.
 - TF32 und hohe MatMul-Präzision sind aktiviert (Ampere+), um Training zu beschleunigen.
 
 ---
 
-## 📂 Projektstruktur
+## Projektstruktur
 
 ```text
 spline-vgp-project/
@@ -199,7 +199,7 @@ spline-vgp-project/
 
 ---
 
-## ➕ Erweiterbarkeit
+## Erweiterbarkeit
 
 **Neue Aktivierung hinzufügen**
 

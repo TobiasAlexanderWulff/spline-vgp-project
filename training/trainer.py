@@ -135,7 +135,6 @@ def train(
         minutes, seconds = divmod(rem, 60)
         time_str = f"[{hours:02}:{minutes:02}:{seconds:02}]"
 
-        # Mittel der Parameter pro Epoche loggen
         for name in grad_count.keys():
             count = max(1, grad_count[name])
             gradient_log.append({
