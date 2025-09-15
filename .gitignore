@@ -44,3 +44,5 @@ data/
 # OS files
 .DS_Store
 
+# VSCode settings
+.vscode/
